@@ -1,0 +1,46 @@
+# task #2: Install Apache
+- name: Install Apache on Debian
+  apt:
+    name: apache2
+    update_cache: yes
+    state: present
+
+# task #3: Start/Enable Apache
+- name: Stant and Enable Apache on Debian
+  systemd:
+    state: started
+    enabled: yes
+    name: apache2
+
+# task #4: Download Template
+- name: Download Template on Debian
+  get_url:
+    url: https://www.free-css.com/assets/files/free-css-templates/download/page294/woody.zip
+    dest: /tmp/
+
+# task #5: Extract Template to /var/www/html
+- name: Install Unzip on Debian
+  apt:
+    name: unzip
+    update_cache: yes
+    state: present
+
+- name: Unarchive Template on Debian
+  unarchive:
+    src: /tmp/woody.zip
+    dest: /var/www/html
+    remote_src: yes
+
+# Use creates for idempotency
+- name: Move Template Files on Debian
+  shell: mv /var/www/html/carpenter-website-template/* /var/www/html/
+  args:
+    creates: /var/www/index.html
+
+- name: Recursively change ownership of a directory on Debian
+  file:
+    ath: /var/www/html
+    state: directory
+    recurse: yes
+    owner: www-data
+    group: www-data
