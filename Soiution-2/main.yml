@@ -1,42 +1,47 @@
+- hosts: all
+  tasks:
   # task #1: Disable SELinus  
   - name: Disable SELinux
     selinux:
       state: disabled
+    when: ansible_os_family == "RedHat"
   
-  # task #2: Install Apache
-  - name: Install Apache on RedHat
-    yum:
-      name: httpd
-      state: latest
-  
+  # Task #2: Install Apache
+  - name: Install Apache
+    package:
+      name: "{{ apache_name }}"
+      state: present
+
   # task #3: Start/Enable Apache
-  - name: Stant and Enable Apache on RedHat
+  - name: Stant and Enable Apache
     systemd:
       state: started
       enabled: yes
-      name: httpd
-  
+      name: "{{ apache_name }}"
+
   # task #4: Download Template
-  - name: Download Template on RedHat
+  - name: Download Template
     get_url:
       url: https://www.free-css.com/assets/files/free-css-templates/download/page294/woody.zip
       dest: /tmp/
-  
-  # task #5: Extract Template to /var/www/html
-  - name: Install Unzip on RedHat
-    yum:
-      name: unzip
-      state: latest
 
-  - name: Move Template Files on RedHat
+
+  # task #5: Extract Template to /var/www/html
+  - name: Install Unzip
+    package:
+      name: "{{ apache_name }}"
+      state: present
+
+  # Use creates for idempotency
+  - name: Move Template Files
     shell: mv /var/www/html/carpenter-website-template/* /var/www/html/
     args:
       creates: /var/www/index.html
-      
+
   - name: Recursively change ownership of a directory on RedHat
     file:
       path: /var/www/html
       state: directory
       recurse: yes
-      owner: apache
-      group: apache
+      owner: "{{ apache_user }}"
+      group: "{{ apache_user }}"
